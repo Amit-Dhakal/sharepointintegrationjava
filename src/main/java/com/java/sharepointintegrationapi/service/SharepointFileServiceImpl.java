@@ -38,7 +38,7 @@ public class SharepointFileServiceImpl implements SharepointFileService {
     public void downloadFoldersFiles(String token,SharePointDetail sharePointDetail) {
     	
     	sharePointDetail=new SharePointDetail();
-    	sharePointDetail.setSiteName("/sites/sharepointjavaintegration");
+    	sharePointDetail.setSiteName("/sites/raju-dev");
         sharePointDetail.setDownloadDirectory("D:\\result\\");  
         
     	  String downloadFileDir = sharePointDetail.getDownloadDirectory();
@@ -47,11 +47,12 @@ public class SharepointFileServiceImpl implements SharepointFileService {
       
         try {
            // log.info("-----First downloading files from base folder-----.");
-            
+  
             System.out.println("-----First downloading files from base folder-----.");
             
             
             downloadAllFilesFromFolder(token, downloadFileDir,siteURL, siteFolderUrl);
+            
             List<String> folderNames = getListOfFolders(token, siteURL, siteFolderUrl);
             for (String folder : folderNames) {
               //  log.info("Downloading Files from inside {} folder", folder);
@@ -125,6 +126,8 @@ public class SharepointFileServiceImpl implements SharepointFileService {
         httpFConn.setRequestMethod("GET");
         httpFConn.setRequestProperty("Authorization", "Bearer " + token);
         httpFConn.setRequestProperty("accept", "application/json;odata=verbose");
+        
+        
         // Read the response
         String httpFResponseStr = "";
         InputStreamReader inputStreamReader;
@@ -146,10 +149,7 @@ public class SharepointFileServiceImpl implements SharepointFileService {
     }
 
     public List<String> getListOfFolders(String token, String siteURL, String siteFolderUrl) throws IOException {
-
-    	
-    	
-    	
+  	
         List<String> folderNames = new ArrayList<>();
         String fUrl0 = siteURL + "/_api/web/GetFolderByServerRelativeUrl('" + siteFolderUrl
                 + "')/Folders";
@@ -205,6 +205,4 @@ public class SharepointFileServiceImpl implements SharepointFileService {
         httpFConn0.connect();
         return httpFConn0;
     }
-
-
 }

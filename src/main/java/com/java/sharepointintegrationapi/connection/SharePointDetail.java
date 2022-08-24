@@ -11,7 +11,6 @@ public class SharePointDetail {
     
     private String siteName;
     private String downloadDirectory;
-
     
 	public String getSiteName() {
 		return siteName;

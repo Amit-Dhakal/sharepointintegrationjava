@@ -30,13 +30,19 @@ public class SharePointController {
     
     
     
-    @PostMapping(path="/download",consumes = {
+    public SharePointController() {
+		// TODO Auto-generated constructor stub
+	}
+
+
+
+	@PostMapping(path="/download",consumes = {
     		MediaType.APPLICATION_XML_VALUE,
     		MediaType.APPLICATION_JSON_VALUE},produces = {MediaType.APPLICATION_XML_VALUE,
     	    		MediaType.APPLICATION_JSON_VALUE}   )
    
-    public ResponseEntity<?> downloadFilesAndFolder(@RequestBody SharePointDetail sharePointDetail) {
-
+    public ResponseEntity<?> downloadFilesAndFolder() {
+    	SharePointDetail sharePointDetail=new SharePointDetail();
         String token = SharepointConnection.getToken();
         sharepointFileService.downloadFoldersFiles(token,sharePointDetail);
         return new ResponseEntity<>("Downloaded Successfully!", HttpStatus.OK);
@@ -49,9 +55,10 @@ public class SharePointController {
     public ResponseEntity<?> listFilesAndFolder() throws IOException {
     	
     	SharePointDetail sharePointDetail=new SharePointDetail();
-    	sharePointDetail.setSiteName("/sites/sharepointjavaintegration");
-        sharePointDetail.setDownloadDirectory("D:\\result\\");  
+    //	sharePointDetail.setSiteName("/sites/sharepointjavaintegration");
     	
+       	sharePointDetail.setSiteName("/sites/raju-dev");
+        sharePointDetail.setDownloadDirectory("D:\\result\\");  	
     	
         String token = SharepointConnection.getToken();
         String siteFolderUrl = sharePointDetail.getSiteName() + "/Shared%20Documents";
