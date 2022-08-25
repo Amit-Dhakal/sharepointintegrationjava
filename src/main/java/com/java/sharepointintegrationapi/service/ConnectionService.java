@@ -20,9 +20,9 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.assertj.core.util.Lists;
 
-import com.java.sharepointintegrationapi.connection.SharePointCredential;
+import com.java.sharepointintegrationapi.util.Constants;
 
-public class SharepointConnection {
+public class ConnectionService {
 
     public static String getToken() {
         CloseableHttpClient httpClient = HttpClients.createDefault();
@@ -40,13 +40,13 @@ public class SharepointConnection {
         HttpPost postRequest = new HttpPost(url);
         postRequest.setHeader("Content-Type", "application/x-www-form-urlencoded");
 
-        String clientId = String.format("%s@%s", SharePointCredential.clientId, bearerRealm);
-        String resource = String.format("%s/%s@%s", resourceId, SharePointCredential.domain + ".sharepoint.com", bearerRealm);
+        String clientId = String.format("%s@%s", Constants.clientId, bearerRealm);
+        String resource = String.format("%s/%s@%s", resourceId, Constants.domain + ".sharepoint.com", bearerRealm);
 
         List<NameValuePair> params = Lists.newArrayList(
                 new BasicNameValuePair("grant_type", "client_credentials"),
                 new BasicNameValuePair("client_id", clientId),
-                new BasicNameValuePair("client_secret", SharePointCredential.clientSecret),
+                new BasicNameValuePair("client_secret", Constants.clientSecret),
                 new BasicNameValuePair("resource", resource)
         );
 
@@ -78,7 +78,7 @@ public class SharepointConnection {
 
 
     private static List<String> getBearerRealmAndResourceId(CloseableHttpClient httpClient) {
-        String url = String.format("https://%s/_layouts/15/sharepoint.aspx", SharePointCredential.domain + ".sharepoint.com");
+        String url = String.format("https://%s/_layouts/15/sharepoint.aspx", Constants.domain + ".sharepoint.com");
 
         List<String> res = new ArrayList<>();
         HttpGet getRequest = new HttpGet(url);

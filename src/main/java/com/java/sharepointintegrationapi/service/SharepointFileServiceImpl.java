@@ -16,51 +16,34 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.java.sharepointintegrationapi.connection.SharePointDetail;
-import com.java.sharepointintegrationapi.connection.SharePointCredential;
-
+import com.java.sharepointintegrationapi.dto.SharePointDetail;
+import com.java.sharepointintegrationapi.util.Constants;
 
 @Slf4j
 @Service
 public class SharepointFileServiceImpl implements SharepointFileService {
 
-    public static void main(String[] args) {
+    public void downloadFoldersFiles(String token) {
 
-      SharepointFileService sharepointFileService = new SharepointFileServiceImpl();
-       SharePointDetail sharePointDetail = new SharePointDetail();
-      // sharePointDetail.setSiteName("/sites/sharepointjavaintegration");
-     //  sharePointDetail.setDownloadDirectory("D:\\result\\");    
-       sharepointFileService.downloadFoldersFiles(SharepointConnection.getToken(),sharePointDetail);
+        String filePath = "D:" + File.separator + Constants.shared_folder;
+        System.out.println("filePath:" + filePath);
 
-    }
+        SharePointDetail sharePointDetail = new SharePointDetail();
+        sharePointDetail.setSiteName(Constants.site);
+        sharePointDetail.setDownloadDirectory(filePath);
 
+        String downloadFileDir = sharePointDetail.getDownloadDirectory();
+        String siteFolderUrl = sharePointDetail.getSiteName() + "/" + Constants.shared_folder.replaceAll("\\s", "%20");
+        String siteURL = "https://" + Constants.domain + ".sharepoint.com" + sharePointDetail.getSiteName();
 
-    public void downloadFoldersFiles(String token,SharePointDetail sharePointDetail) {
-    	
-    	sharePointDetail=new SharePointDetail();
-    	sharePointDetail.setSiteName("/sites/raju-dev");
-        sharePointDetail.setDownloadDirectory("D:\\result\\");  
-        
-    	  String downloadFileDir = sharePointDetail.getDownloadDirectory();
-          String siteFolderUrl = sharePointDetail.getSiteName() + "/Shared%20Documents";
-          String siteURL = "https://" + SharePointCredential.domain + ".sharepoint.com" + sharePointDetail.getSiteName();
-      
         try {
-           // log.info("-----First downloading files from base folder-----.");
-  
             System.out.println("-----First downloading files from base folder-----.");
-            
-            
-            downloadAllFilesFromFolder(token, downloadFileDir,siteURL, siteFolderUrl);
-            
-            List<String> folderNames = getListOfFolders(token, siteURL, siteFolderUrl);
-            for (String folder : folderNames) {
-              //  log.info("Downloading Files from inside {} folder", folder);
-                
-            	 System.out.println("Downloading Files from inside {} folder");
 
-                
-                downloadAllFilesFromFolder(token, downloadFileDir + "/" + folder + "/", siteURL, siteFolderUrl + "/" + folder);
+            downloadAllFilesFromFolder(token, downloadFileDir, siteURL, siteFolderUrl);
+            List<String> folderNames = getListOfFolders(token, siteURL, siteFolderUrl);
+
+            for (String folder : folderNames) {
+                downloadAllFilesFromFolder(token, downloadFileDir + File.separator + folder, siteURL, siteFolderUrl + "/" + folder);
             }
 
         } catch (Exception e) {
@@ -80,11 +63,10 @@ public class SharepointFileServiceImpl implements SharepointFileService {
             fileName = jsonFileNameObj.get("Name").getAsString();
 
             fileName = fileName.replaceAll("\\s", "%20");
-            String fileUrl = siteURL + "/_api/web/GetFolderByServerRelativeUrl('"
-                    + siteFolderUrl
-                    + "')/Files('" + fileName + "')/$value";
+            String fileUrl = siteURL + "/_api/web/GetFolderByServerRelativeUrl('" + siteFolderUrl + "')/Files('" + fileName + "')/$value";
 
             URL url = new URL(fileUrl);
+
             URLConnection urlConnection = url.openConnection();
             HttpURLConnection httpURLConnection = (HttpURLConnection) urlConnection;
             httpURLConnection.setRequestMethod("GET");
@@ -93,6 +75,8 @@ public class SharepointFileServiceImpl implements SharepointFileService {
             convertToFileAndDownload(downloadFileDir, fileName, inputStream);
 
         }
+
+        System.out.println("downloadAllFilesFromFolder out...........:");
     }
 
     private void convertToFileAndDownload(String downloadFileDir, String fileName, InputStream inputStream) throws IOException {
@@ -101,7 +85,7 @@ public class SharepointFileServiceImpl implements SharepointFileService {
             fileDirs.mkdirs();
         }
         fileName = fileName.replaceAll("%20", " ");
-        String saveFilePath = downloadFileDir + fileName;
+        String saveFilePath = downloadFileDir + File.separator + fileName;
         FileOutputStream outputStream = new FileOutputStream(saveFilePath);
         int bytesRead = -1;
         byte[] buffer = new byte[1024];
@@ -110,24 +94,21 @@ public class SharepointFileServiceImpl implements SharepointFileService {
         }
         outputStream.close();
         inputStream.close();
-        
-     //   log.info("File {} downloaded", fileName);
-        
+
         System.out.println("File {} downloaded");
-        
+
     }
-    
+
     private JsonArray getFilesNameFromFolder(String token, String siteURL, String siteFolderUrl) throws IOException {
-        String fUrl = siteURL + "/_api/web/GetFolderByServerRelativeUrl('" + siteFolderUrl
-                + "')/Files";
+        String fUrl = siteURL + "/_api/web/GetFolderByServerRelativeUrl('" + siteFolderUrl + "')/Files";
+
         URL fileLstUrl = new URL(fUrl);
         URLConnection fConnection = fileLstUrl.openConnection();
         HttpURLConnection httpFConn = (HttpURLConnection) fConnection;
         httpFConn.setRequestMethod("GET");
         httpFConn.setRequestProperty("Authorization", "Bearer " + token);
         httpFConn.setRequestProperty("accept", "application/json;odata=verbose");
-        
-        
+
         // Read the response
         String httpFResponseStr = "";
         InputStreamReader inputStreamReader;
@@ -144,22 +125,20 @@ public class SharepointFileServiceImpl implements SharepointFileService {
         }
         JsonParser parser = new JsonParser();
         JsonObject rootObj = parser.parse(httpFResponseStr).getAsJsonObject();
-        return rootObj.get("d").getAsJsonObject().get("results")
-                .getAsJsonArray();
+        return rootObj.get("d").getAsJsonObject().get("results").getAsJsonArray();
     }
 
     public List<String> getListOfFolders(String token, String siteURL, String siteFolderUrl) throws IOException {
-  	
+
         List<String> folderNames = new ArrayList<>();
-        String fUrl0 = siteURL + "/_api/web/GetFolderByServerRelativeUrl('" + siteFolderUrl
-                + "')/Folders";
+        String fUrl0 = siteURL + "/_api/web/GetFolderByServerRelativeUrl('" + siteFolderUrl + "')/Folders";
+        System.out.println("getListOfFolders:" + fUrl0);
         String httpFResponseStr0 = getHttpResponse(token, fUrl0);
         String fileName0 = "";
         JsonParser parser = new JsonParser();
 
         JsonObject jsonObject = parser.parse(httpFResponseStr0).getAsJsonObject();
-        JsonArray nameFileArray0 = jsonObject.get("d").getAsJsonObject().get("results")
-                .getAsJsonArray();
+        JsonArray nameFileArray0 = jsonObject.get("d").getAsJsonObject().get("results").getAsJsonArray();
 
         for (JsonElement fpa : nameFileArray0) {
             JsonObject jsonFileNameObj = fpa.getAsJsonObject();
@@ -170,8 +149,6 @@ public class SharepointFileServiceImpl implements SharepointFileService {
         return folderNames;
     }
 
-    
-    
     private String getHttpResponse(String token, String fUrl0) throws IOException {
         URL fileLstUrl0 = new URL(fUrl0);
         HttpURLConnection httpFConn0 = getHttpURLConnection(token, fileLstUrl0);
