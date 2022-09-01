@@ -18,13 +18,16 @@ public class SchedularComponent {
 
     @Autowired
     SharepointFileService sharepointFileService;
+    
+    
+    com.java.sharepointintegrationapi.dto.SharePointDetail SharePointDetail=new com.java.sharepointintegrationapi.dto.SharePointDetail();
 
     @Scheduled(fixedRate = 2 * 60 * 1000)
     public void synchSharePoint() {
         final LocalDateTime start = LocalDateTime.now();
         LOG.info("download start -" + start);
         String token = ConnectionService.getToken();
-        sharepointFileService.downloadFoldersFiles(token);
+        sharepointFileService.downloadFoldersFiles(token,SharePointDetail);
         final LocalDateTime end = LocalDateTime.now();
         LOG.info("download end -" + end);
 
